@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -13,8 +14,18 @@ namespace Apps72.Dev.Data.DbMocker
             IEnumerable<T> rows = null,
             BindingFlags propertyBindingFlags = DefaultFromTypeBindingFlags
         )
+            where T : class
         {
-            var propertyInfos = typeof(T).GetProperties(propertyBindingFlags);
+            return FromType(typeof(T), rows, propertyBindingFlags);
+        }
+
+        public static MockTable FromType(
+            Type type,
+            IEnumerable<object> rows = null,
+            BindingFlags propertyBindingFlags = DefaultFromTypeBindingFlags
+        )
+        {
+            var propertyInfos = type.GetProperties(propertyBindingFlags);
 
             var columns = propertyInfos
                 .Select(propertyInfo => (propertyInfo.Name, propertyInfo.PropertyType))
