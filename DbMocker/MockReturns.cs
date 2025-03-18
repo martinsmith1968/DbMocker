@@ -1,4 +1,4 @@
-﻿using Apps72.Dev.Data.DbMocker.Helpers;
+using Apps72.Dev.Data.DbMocker.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,9 +17,11 @@ namespace Apps72.Dev.Data.DbMocker
         public string Description { get; internal set; }
 
         /// <summary />
-        private List<Action<MockCommand>> _modifyparameter = new List<Action<MockCommand>>();
+        private List<Action<MockCommand>> _modifyParameter = new List<Action<MockCommand>>();
 
         private Func<MockCommand, MockTable[]> _returnsFunction;
+
+        private readonly List<Action<MockCommand>> _callbacks = new List<Action<MockCommand>>();
 
         /// <summary />
         internal Func<MockCommand, MockTable[]> ReturnsFunction
@@ -28,7 +30,12 @@ namespace Apps72.Dev.Data.DbMocker
             {
                 return (command) =>
                 {
-                    foreach (var mody in _modifyparameter)
+                    foreach (Action<MockCommand> callback in _callbacks)
+                    {
+                        callback(command);
+                    }
+
+                    foreach (var mody in _modifyParameter)
                     {
                         mody(command);
                     }
@@ -85,7 +92,7 @@ namespace Apps72.Dev.Data.DbMocker
 
         /// <summary>
         /// Sets the expression to return a sample data object, when the condition occured.
-        /// This object is converted to a <seealso cref="MockTable"/> where columns are property names 
+        /// This object is converted to a <seealso cref="MockTable"/> where columns are property names
         /// and data in the first row are proerty values.
         /// </summary>
         /// <param name="returns">Sample data</param>
@@ -96,7 +103,7 @@ namespace Apps72.Dev.Data.DbMocker
 
         /// <summary>
         /// Sets a sample data object, when the condition occured.
-        /// This object is converted to a <seealso cref="MockTable"/> where columns are property names 
+        /// This object is converted to a <seealso cref="MockTable"/> where columns are property names
         /// and data in the first row are proerty values.
         /// </summary>
         /// <param name="returns">Sample data</param>
@@ -138,8 +145,8 @@ namespace Apps72.Dev.Data.DbMocker
         /// <param name="returns">Value to return</param>
         public MockReturns SetParameterValue(string parameterName, object value, ParameterDirection direction = ParameterDirection.Output)
         {
-            _modifyparameter.Add((command) => 
-            { 
+            _modifyParameter.Add((command) =>
+            {
                 var parameter = command.Parameters.FirstOrDefault(a => a.ParameterName == parameterName);
 
                 if (parameter == null)
@@ -154,6 +161,21 @@ namespace Apps72.Dev.Data.DbMocker
 
                 parameter.Value = value;
             });
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the expression to execute an action, to trace some data for example.
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        public MockReturns Callback(Action<MockCommand> callback)
+        {
+            if (callback != null)
+            {
+                _callbacks.Add(callback);
+            }
 
             return this;
         }

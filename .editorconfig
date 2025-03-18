@@ -1,0 +1,17 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# This is the default for the codeline.
+root = true
+
+[*]
+indent_style = space
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+spelling_exclusion_path = ./spelling.dic
+
+[*.cs]
+indent_size = 4
+
+[*.json]
+indent_size = 2

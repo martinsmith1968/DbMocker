@@ -4,6 +4,7 @@ using DbMocker.Tests.SampleTypes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace DbMocker.Tests
 {
@@ -362,6 +363,46 @@ namespace DbMocker.Tests
                     Assert.AreEqual(rowData[i].TimestampModified, table.Rows[i, 6]);
                 }
             }
+        }
+
+        [TestMethod]
+        public void Should_Only_Return_Properties_From_Whitelist()
+        {
+            using var context = new MyDbContext();
+
+            var entityTypeModel = context.Model.FindEntityTypes(typeof(NavigationModel));
+            var properties = entityTypeModel.FirstOrDefault().GetProperties().ToList();
+            var table = MockTable.FromType<NavigationModel>(
+                null,
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+                properties.Select(p => p.Name).ToArray()
+            );
+
+            Assert.IsNotNull(table);
+
+            Assert.AreEqual(7, table.Columns.Length);
+            Assert.IsFalse(table.Columns.Any(c => c.Name == nameof(NavigationModel.RelatedModels)));
+        }
+    }
+
+    public class MyDbContext : DbContext
+    {
+        public DbSet<NavigationModel> SimpleModels { get; set; }
+        public DbSet<RelatedModel> RelatedModels { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("YourConnectionStringHere");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<NavigationModel>()
+                .HasMany(sm => sm.RelatedModels)
+                .WithOne(rm => rm.NavigationModel)
+                .HasForeignKey(rm => rm.NavigationModelId);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
