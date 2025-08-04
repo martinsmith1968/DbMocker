@@ -17,13 +17,14 @@ namespace Apps72.Dev.Data.DbMocker
         )
             where T : class
         {
-            return FromType(typeof(T), rows, propertyBindingFlags);
+            return FromType(typeof(T), rows, propertyBindingFlags, columnsToInclude);
         }
 
         public static MockTable FromType(
             Type type,
             IEnumerable<object> rows = null,
-            BindingFlags propertyBindingFlags = DefaultFromTypeBindingFlags
+            BindingFlags propertyBindingFlags = DefaultFromTypeBindingFlags,
+            string[] columnsToInclude = null
         )
         {
             var propertyInfos = type.GetProperties(propertyBindingFlags);

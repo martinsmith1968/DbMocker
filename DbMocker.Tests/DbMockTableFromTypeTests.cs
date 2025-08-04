@@ -179,14 +179,15 @@ namespace DbMocker.Tests
             [TestMethod]
             public void Mock_MockTable_FromType_with_AnonymousType_Test()
             {
-                var table = MockTable.FromType(new[]
-                {
-                    new
-                    {
-                        Id = 123,
-                        Name = "My Name"
-                    }
-                });
+                var table = MockTable.FromType(
+                    [
+                        new
+                        {
+                            Id = 123,
+                            Name = "My Name"
+                        }
+                    ]
+                );
 
                 Assert.AreEqual(123, table.Rows[0, 0]);
                 Assert.AreEqual("My Name", table.Rows[0, 1]);
